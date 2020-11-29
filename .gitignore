@@ -1,3 +1,6 @@
+stage_docker_create.bash
+rchomeedu_docker_create.bash
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

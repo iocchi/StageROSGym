@@ -29,11 +29,14 @@ elif [ "x$1" == "xstart" ]; then
 echo "====================================="
 echo "Starting stage_environments ..."
 
-if [ ! -f stage_docker_create.bash ]; then
 
+if [ `docker image ls | grep stage | wc -l` == 0 ]; then
+
+docker pull iocchi/stage_environments
 wget -N https://bitbucket.org/iocchi/stage_environments/raw/master/docker_create.bash
 mv docker_create.bash stage_docker_create.bash
-source stage_docker_create.bash
+chmod a+x stage_docker_create.bash
+./stage_docker_create.bash
 
 fi
 
@@ -50,11 +53,13 @@ echo ""
 echo "====================================="
 echo "Starting rc-home-edu-learn-ros ..."
 
-if [ ! -f rchomeedu_docker_create.bash ]; then
+if [ `docker image ls | grep iocchi/rchomeedu-1804-melodic | wc -l` == 0 ]; then
 
+docker pull iocchi/rchomeedu-1804-melodic
 wget -N wget https://raw.githubusercontent.com/robocupathomeedu/rc-home-edu-learn-ros/master/docker/1804/create.bash
 mv create.bash rchomeedu_docker_create.bash
-source rchomeedu_docker_create.bash
+chmod a+x rchomeedu_docker_create.bash
+./rchomeedu_docker_create.bash
 
 fi
 
