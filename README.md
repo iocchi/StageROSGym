@@ -21,7 +21,7 @@ These functionalities are available through docker containers that are pulled by
 
     ./run.bash
 
-4- Start a script
+4. Start a script
 
 In the `stagerosgym` container
 
@@ -31,7 +31,9 @@ In the `stagerosgym` container
 
 5. Quit everything
 
-In the `stagerosgym` container, exit from all the windows or use CTRL-b d
+In the `stagerosgym` container, exit from all the windows or use `CTRL-b d`
+
+In the host system:
 
     ./stagerosgym.bash stop
 
@@ -48,12 +50,12 @@ Use
 
     ./stagerosgym.bash [start|stop|status|pause|resume|speedup <value>|footprints]
 
-    start        start the docker containers
-    stop         stop the docker containers
-    status       show running modules
-    pause        simulation pause
-    resume       simulation resume
-    speedup <v>  simulation speedup <v>
-    footprints   show footprints
+        start        start the docker containers
+        stop         stop the docker containers
+        status       show running modules
+        pause        simulation pause
+        resume       simulation resume
+        speedup <v>  simulation speedup <v>
+        footprints   show footprints
 
 
