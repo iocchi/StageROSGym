@@ -30,9 +30,14 @@ echo "====================================="
 echo "Starting stage_environments ..."
 
 
-if [ `docker image ls | grep stage | wc -l` == 0 ]; then
+if [ `docker image ls | grep iocchi/stage_environments | wc -l` == 0 ]; then
 
 docker pull iocchi/stage_environments
+
+fi
+
+if [ `docker container ls | grep iocchi/stage_environments | wc -l` == 0 ]; then
+
 wget -N https://bitbucket.org/iocchi/stage_environments/raw/master/docker_create.bash
 mv docker_create.bash stage_docker_create.bash
 chmod a+x stage_docker_create.bash
@@ -41,6 +46,18 @@ chmod a+x stage_docker_create.bash
 fi
 
 docker start stage_environments
+
+sleep 3
+
+if [ `docker ps | grep stage_environments | wc -l` == 0 ]; then
+
+echo "ERROR Container stage_environments not running"
+echo "====================================="
+echo ""
+
+exit 1
+
+fi
 
 echo "stage_environments running"
 echo "====================================="
@@ -56,7 +73,12 @@ echo "Starting rc-home-edu-learn-ros ..."
 if [ `docker image ls | grep iocchi/rchomeedu-1804-melodic | wc -l` == 0 ]; then
 
 docker pull iocchi/rchomeedu-1804-melodic
-wget -N wget https://raw.githubusercontent.com/robocupathomeedu/rc-home-edu-learn-ros/master/docker/1804/create.bash
+
+fi
+
+if [ `docker container ls | grep iocchi/rchomeedu-1804-melodic | wc -l` == 0 ]; then
+
+wget -N https://raw.githubusercontent.com/robocupathomeedu/rc-home-edu-learn-ros/master/docker/1804/create.bash
 mv create.bash rchomeedu_docker_create.bash
 chmod a+x rchomeedu_docker_create.bash
 ./rchomeedu_docker_create.bash
@@ -64,6 +86,17 @@ chmod a+x rchomeedu_docker_create.bash
 fi
 
 docker start rchomeedu-1804-melodic
+
+sleep 3
+
+if [ `docker ps | grep rchomeedu-1804-melodic | wc -l` == 0 ]; then
+
+echo "ERROR Container rchomeedu-1804-melodic not running"
+echo "====================================="
+echo ""
+exit 1
+
+fi
 
 echo "rc-home-edu-learn-ros running"
 echo "====================================="
