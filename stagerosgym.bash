@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Manage stage_environments simulation
-# Use: ./stagerosgym.bash  [start|stop|status|pause|resume|speedup <value>|footprints]
+# Use: ./stagerosgym.bash  [start [--no_gui]|stop|status|pause|resume|speedup <value>|footprints]
 
 if [ "x$1" == "xstatus" ]; then
 
@@ -112,7 +112,7 @@ s1=stage_environments
 
 #docker exec -it stage_environments tmux new-window -t "$s1" -n "1"
 
-docker exec -it stage_environments tmux send-keys -t "$s1:0" "rosrun stage_environments start_simulation.py DISB1" C-M
+docker exec -it stage_environments tmux send-keys -t "$s1:0" "rosrun stage_environments start_simulation.py $2 DISB1" C-M
 
 echo "Simulation running"
 echo "====================================="
@@ -191,7 +191,7 @@ docker exec -it stage_environments bash -ci "rostopic pub stageGUIRequest std_ms
 
 else
 
-echo "Use: $0 [start|stop|status|pause|resume|speedup <value>|footprints]"
+echo "Use: $0 [start  [--no_gui]|stop|status|pause|resume|speedup <value>|footprints]"
 
 fi
 
