@@ -23,19 +23,19 @@ These functionalities are available through docker containers that are pulled by
 
 4. Start a script
 
-In the `stagerosgym` container
+    In the `stagerosgym` container
 
-    cd StageROSGym
-    python testenv.py
+        cd StageROSGym
+        python testenv.py
  
 
 5. Quit everything
 
-In the `stagerosgym` container, exit from all the windows or use `CTRL-b d`
+    In the `stagerosgym` container, exit from all the windows or use `CTRL-b d`
 
-In the host system:
+    In the host system:
 
-    ./stagerosgym.bash stop
+        ./stagerosgym.bash stop
 
 
 
