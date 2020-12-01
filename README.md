@@ -2,8 +2,8 @@
 
 Repository to run experiments with ROS Stage simulator and Open AI Gym environment.
 
-The `StageROSGym` environment is based on Stage ROS simulator `stage_environments` 
-and on robot behaviors implemented in `rc-home-edu-learn-ros`.
+The `StageROSGym` environment is based on Stage ROS simulator `stage_environments` (https://bitbucket.org/iocchi/stage_environments/)
+and on robot behaviors implemented in `rc-home-edu-learn-ros` (https://github.com/robocupathomeedu/rc-home-edu-learn-ros).
 These functionalities are available through docker containers that are pulled by the script `stagerosgym.bash` provided in this repository.
 
 ## Quick start
