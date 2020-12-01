@@ -12,12 +12,12 @@ These functionalities are available through docker containers that are pulled by
 
     ./build.bash
 
-2. Start all the processes, use the following command
+2. Start all the processes and the simulator
 
     ./stagerosgym.bash start
 
 
-3. Run StageROSGym
+3. Run StageROSGym container
 
     ./run.bash
 
@@ -48,14 +48,15 @@ following instructions in the above repositories.
 
 Use
 
-    ./stagerosgym.bash [start|stop|status|pause|resume|speedup <value>|footprints]
+    ./stagerosgym.bash [start [--no_gui]|stop|status|pause|resume|speedup <value>|footprints]
 
-        start        start the docker containers
-        stop         stop the docker containers
-        status       show running modules
-        pause        simulation pause
-        resume       simulation resume
-        speedup <v>  simulation speedup <v>
-        footprints   show footprints
+        start           start the docker containers and the simulator with GUI
+        start --no_gui  start the docker containers and the simulator without GUI
+        stop            stop the docker containers
+        status          show running modules
+        pause           simulation pause
+        resume          simulation resume
+        speedup <v>     simulation speedup <v>
+        footprints      show footprints
 
 
