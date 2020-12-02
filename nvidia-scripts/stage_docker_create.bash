@@ -1,19 +1,12 @@
 #!/bin/bash
 
-NVIDIA_STR=""
-
-NVIDIADIR=`ls -d1 /usr/lib/nvidia-* 2> /dev/null | head -n 1`
-
-if [ $NVIDIADIR ]; then
-  echo "Found nvidia libraries: $NVIDIADIR"
-  NVIDIA_STR="-v $NVIDIADIR:$NVIDIADIR \
-           --device /dev/dri"
-fi
-
 VERSION=latest
 if [ ! "$1" == "" ]; then
   VERSION=$1
 fi
+
+script_path="$(cd "$(dirname "$0")"; pwd)"
+. $script_path/nvidia-check.bash
 
 docker stop stage_environments &> /dev/null
 docker container rm stage_environments &> /dev/null
@@ -25,7 +18,6 @@ docker create -it \
     $NVIDIA_STR \
     -e DISPLAY=$DISPLAY \
     -e QT_X11_NO_MITSHM=1 \
-    --privileged \
     --net=host \
     iocchi/stage_environments:$VERSION
 

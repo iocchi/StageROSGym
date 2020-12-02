@@ -2,7 +2,7 @@
 
 # Source this in current bash. It will declare two variables:
 #  HAS_NVIDIA if the nvidia drivers have been found
-#  NVIDIASTR for the Docker arguments required for nvidia drivers
+#  NVIDIA_STR for the Docker arguments required for nvidia drivers
 
 # Simple check
 [ -d /usr/lib/nvidia* ]
@@ -16,5 +16,5 @@ if [ $? -eq 1 ]; then
 fi
 
 if [ $HAS_NVIDIA ]; then
-  NVIDIASTR=' --gpus all,"capabilities=display" '
+  NVIDIA_STR=' --gpus all,"capabilities=display" '
 fi

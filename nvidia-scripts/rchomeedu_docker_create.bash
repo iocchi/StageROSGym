@@ -13,6 +13,8 @@ if [ "$1" != "" ]; then
   VERSION=$1
 fi
 
+script_path="$(cd "$(dirname "$0")"; pwd)"
+
 echo "Image name: $IMAGENAME:$VERSION"
 echo "Container name: $CONTAINERNAME"
 
@@ -20,11 +22,14 @@ echo "Creating container $CONTAINERNAME from image $IMAGENAME:$VERSION ..."
 
 
 # change setings here if needed
-ROBOT_DEVICE=/dev/ttyACM0
-LASER_DEVICE=/dev/ttyUSB0
-CAMERA_DEVICE=/dev/video0
-JOYSTICK_DEVICE=/dev/input/js0
-PLAYGROUND_FOLDER=$HOME/playground
+ROBOT_DEVICE=
+LASER_DEVICE=
+CAMERA_DEVICE=
+JOYSTICK_DEVICE=
+PLAYGROUND_FOLDER=$script_path/playground
+
+# Nvidia settings
+. $script_path/nvidia-check.bash
 
 
 if [ -e ${ROBOT_DEVICE} ]; then
@@ -43,13 +48,6 @@ if [ -e ${JOYSTICK_DEVICE} ]; then
   echo "Joystick device ${JOYSTICK_DEVICE} found"
 fi
 
-if [ -d /usr/lib/nvidia-384 ]; then
-  NVIDIA_STR="-v /usr/lib/nvidia-384:/usr/lib/nvidia-384 \
-           -v /usr/lib32/nvidia-384:/usr/lib32/nvidia-384 \
-           --device /dev/dri"
-  echo "Nvidia support enabled"
-fi
-
 if [ -d /run/user/$(id -u)/pulse ]; then
   AUDIO_STR="--device=/dev/snd \
            -v /run/user/$(id -u)/pulse:/run/user/1000/pulse \
@@ -58,8 +56,11 @@ if [ -d /run/user/$(id -u)/pulse ]; then
   echo "Audio support enabled"
 fi
 
-chmod go+rw ~/.config/pulse/cookie # this file needed by docker user
-chmod go+xrw /run/user/$(id -u)/pulse # this file needed by docker user
+# Removing others, as the docker group should be enough
+chmod g+rw ~/.config/pulse/cookie # this file needed by docker user
+chmod g+xrw /run/user/$(id -u)/pulse # this file needed by docker user
+
+# TODO: check for requred repositories in $HOME/src.
 
 
 docker create -it \
@@ -68,9 +69,7 @@ docker create -it \
     -v $HOME/.Xauthority:/home/robot/.Xauthority:rw \
     $NVIDIA_STR \
     -e DISPLAY=$DISPLAY \
-    --privileged \
     --net=host \
-    -v /dev:/dev \
     $AUDIO_STR \
     -e ROBOT_DEVICE=$ROBOT_DEVICE \
     -e LASER_DEVICE=$LASER_DEVICE \
