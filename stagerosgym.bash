@@ -1,7 +1,10 @@
 #!/bin/bash
 
 # Manage stage_environments simulation
-# Use: ./stagerosgym.bash  [start|stop|status|pause|resume|speedup <value>|footprints]
+# Use: ./stagerosgym.bash  [start|start-dev|stop|status|pause|resume|speedup <value>|footprints]
+#
+# Note: start-dev was added to run containers on PC with nvidia options:
+# I don't want to break the config for robot
 
 if [ "x$1" == "xstatus" ]; then
 
@@ -22,7 +25,7 @@ if [ "x$1" == "xstatus" ]; then
 	echo "====================================="
 	echo ""
 
-elif [ "x$1" == "xstart" ]; then
+elif [[ $1 == start || $1 == start-dev ]]; then
 
 	# stage_environments
 
@@ -36,13 +39,22 @@ elif [ "x$1" == "xstart" ]; then
 
 	fi
 
-	if [ `docker container ls | grep iocchi/stage_environments | wc -l` == 0 ]; then
+	# No modifications
+	if [[ $1 == start ]]; then
+		if [ `docker container ls | grep iocchi/stage_environments | wc -l` == 0 ]; then
 
 		wget -N https://bitbucket.org/iocchi/stage_environments/raw/master/docker_create.bash
 		mv docker_create.bash stage_docker_create.bash
 		chmod a+x stage_docker_create.bash
 		./stage_docker_create.bash
 
+		fi
+
+	# Modified script for development
+	elif [[ $1 == start-dev ]]; then
+
+		bash nvidia-scripts/stage_docker_create.bash
+		
 	fi
 
 	docker start stage_environments
@@ -76,13 +88,22 @@ elif [ "x$1" == "xstart" ]; then
 
 	fi
 
-	if [ `docker container ls | grep iocchi/rchomeedu-1804-melodic | wc -l` == 0 ]; then
+	# No modifications
+	if [[ $1 == start ]]; then
+		if [ `docker container ls | grep iocchi/rchomeedu-1804-melodic | wc -l` == 0 ]; then
+		
+			wget -N https://raw.githubusercontent.com/robocupathomeedu/rc-home-edu-learn-ros/master/docker/1804/create.bash
+			mv create.bash rchomeedu_docker_create.bash
+			chmod a+x rchomeedu_docker_create.bash
+			./rchomeedu_docker_create.bash
+		
+		fi
 
-		wget -N https://raw.githubusercontent.com/robocupathomeedu/rc-home-edu-learn-ros/master/docker/1804/create.bash
-		mv create.bash rchomeedu_docker_create.bash
-		chmod a+x rchomeedu_docker_create.bash
-		./rchomeedu_docker_create.bash
+	# Modified script for development
+	elif [[ $1 == start-dev ]]; then
 
+		bash nvidia-scripts/rchomeedu_docker_create.bash
+		
 	fi
 
 	docker start rchomeedu-1804-melodic
@@ -191,7 +212,7 @@ elif [ "x$1" == "xfootprints" ]; then
 
 else
 
-	echo "Use: $0 [start|stop|status|pause|resume|speedup <value>|footprints]"
+	echo "Use: $0 [start|start-dev|stop|status|pause|resume|speedup <value>|footprints]"
 
 fi
 
