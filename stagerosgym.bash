@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Manage stage_environments simulation
-# Use: ./stagerosgym.bash  [start|start-dev|stop|status|pause|resume|speedup <value>|footprints]
+# Use: ./stagerosgym.bash  [start [--no_gui]|start-dev [--no_gui]|stop|status|pause|resume|speedup <value>|footprints]
 #
 # Note: start-dev was added to run containers on PC with nvidia options:
 # I don't want to break the config for robot
@@ -133,7 +133,7 @@ elif [[ $1 == start || $1 == start-dev ]]; then
 
 	#docker exec -it stage_environments tmux new-window -t "$s1" -n "1"
 
-	docker exec -it stage_environments tmux send-keys -t "$s1:0" "rosrun stage_environments start_simulation.py DISB1" C-M
+	docker exec -it stage_environments tmux send-keys -t "$s1:0" "rosrun stage_environments start_simulation.py $2 DISB1" C-M
 
 	echo "Simulation running"
 	echo "====================================="
@@ -212,7 +212,7 @@ elif [ "x$1" == "xfootprints" ]; then
 
 else
 
-	echo "Use: $0 [start|start-dev|stop|status|pause|resume|speedup <value>|footprints]"
+	echo "Use: $0 [start  [--no_gui]|start-dev [--no_gui]|stop|status|pause|resume|speedup <value>|footprints]"
 
 fi
 
