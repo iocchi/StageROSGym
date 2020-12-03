@@ -1,5 +1,6 @@
 import os, sys
 import random
+from datetime import datetime
 
 sys.path.append(os.getenv('MARRTINO_APPS_HOME')+'/program')
 
@@ -16,7 +17,9 @@ from robot_cmd_ros import *
 #
 # rosrun stage_environments quit.sh
 
-
+start_pose = [2, 2, 0]
+time_limit = 60
+n_episodes = 1000
 
 class StageEnv:
 
@@ -41,18 +44,20 @@ class StageEnv:
         return setSpeed(self.tv,self.rv,self.dt,False)
 
     def a4(self):
-        self.rv += 0.1
+        self.rv += 0.05
         return setSpeed(self.tv,self.rv,self.dt,False)
 
     def a5(self):
-        self.rv -= 0.1
+        self.rv -= 0.05
         return setSpeed(self.tv,self.rv,self.dt,False)
 
     def a6(self):
         self.rv = 0.0
+        wait(self.dt)        
         return True
 
     def a7(self):
+        wait(self.dt)
         return True
 
     def getstate(self):
@@ -60,12 +65,11 @@ class StageEnv:
         v = getRobotVel()
         #print("%.2f %.2f %.2f %.2f %.2f" %(p[0],p[1],p[2],v[0],v[1]))
         self.state = [p[0],p[1],p[2],v[0],v[1]]
+        return self.state
 
     def reset(self):
-        gx=10
-        gy=2
-        gth=270 # deg
-        stage_setpose(gx,gy,gth)
+        global start_pose
+        stage_setpose(start_pose[0],start_pose[1],start_pose[2])
         wait(0.5)
         return self.getstate()
 
@@ -85,16 +89,24 @@ class StageEnv:
 
 def episode(env):
 
+    dateTimeObj = datetime.now()
+    timestampStr = dateTimeObj.strftime("%Y%m%d-%H%M%S")
+    print('Current Timestamp %s' %timestampStr)
+
+    f = open('data/%s.csv' %(timestampStr), 'w')
+
     print('\nStart')
     s = env.reset()
     done = False
-    i=0
-    n=90
-    while i<n and not done:
+    t = rospy.get_rostime()
+    tend = t.secs + time_limit
+    while t.secs<tend and not done:
       a = env.action_sample()
       s,r,done = env.step(a)
-      i+=1
+      f.write("%06d.%03d ; %.2f ; %.2f ; %.2f ; %.2f ; %.2f; %s\n" %(t.secs,t.nsecs/1e6,s[0],s[1],s[2],s[3],s[4],str(a)))
+      t = rospy.get_rostime()
     stop()
+    f.close()
     return not done
 
 
@@ -107,8 +119,7 @@ env = StageEnv()
 
 r=True
 i=0
-n=3
-while i<n and r:
+while i<n_episodes and r:
     r = episode(env)
     i += 1
 

@@ -28,6 +28,16 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
+# Python packages
+
+RUN pip3 install \
+    pandas scipy matplotlib sklearn jupyter notebook
+
+RUN pip3 install \
+    gym pygame
+
+#RUN pip3 install \
+#    tensorflow keras keras-rl
 
 # User: robot (password: robot) with sudo power
 
@@ -44,16 +54,10 @@ USER robot
 
 # Configuration
 
+RUN rosdep update
+
 RUN echo "set -g mouse on" > $HOME/.tmux.conf 
 
-
-# Python packages
-
-RUN pip3 install \
-    pandas scipy matplotlib sklearn jupyter \
-    gym pygame
-
-#    tensorflow keras keras-rl \
 
 # Init ROS workspace
 
