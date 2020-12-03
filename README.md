@@ -48,15 +48,16 @@ following instructions in the above repositories.
 
 Use
 
-    ./stagerosgym.bash [start [--no_gui]|stop|status|pause|resume|speedup <value>|footprints]
+    ./stagerosgym.bash [start [--no_gui]|start-dev [--no_gui]|stop|status|pause|resume|speedup <value>|footprints]
 
-        start           start the docker containers and the simulator with GUI
-        start --no_gui  start the docker containers and the simulator without GUI
-        stop            stop the docker containers
-        status          show running modules
-        pause           simulation pause
-        resume          simulation resume
-        speedup <v>     simulation speedup <v>
-        footprints      show footprints
+        start                 start the docker containers and the simulator with GUI
+        start --no_gui        start the docker containers and the simulator without GUI
+				start-dev [--no_gui]  start with development options: nvidia drivers without devices
+        stop						      stop the docker containers
+        status                show running modules
+        pause                 simulation pause
+        resume                simulation resume
+        speedup <v>           simulation speedup <v>
+        footprints            show footprints
 
 
