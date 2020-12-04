@@ -109,7 +109,7 @@ class Sender(object):
                 try:
                     self.request.sendall(data)
 
-                except ConnectionError:
+                except OSError:
                     break
 
 

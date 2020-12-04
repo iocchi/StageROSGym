@@ -52,8 +52,8 @@ class StageControls(object):
         """Initializations of the ros environment."""
 
         robot.begin()
-        setMaxSpeed(0.5,1.0)
-        enableObstacleAvoidance(True)
+        robot.setMaxSpeed(0.5,1.0)
+        robot.enableObstacleAvoidance(True)
 
     def action_faster(self):
         self.tv += 0.1
@@ -86,14 +86,31 @@ class StageControls(object):
 class Connector(object):
     """Connections to operate StageControls."""
 
+    port = 30006
+
     def __init__(self):
         """Initialize."""
 
         # StageControls
         self.stage_controls = StageControls()
 
-        # TODO: setup connections, calling Sender and Receiver.
-        # Also prepare a client
+        # Start a sender for returning states
+        # TODO
+
+        # Start a receiver (pause to wait that sender is started)
+        raw_input("Receiving on port " + str(self.port))
+        self.action_receiver = Receiver(1, "localhost", self.port, wait=True)
+        self.action_receiver.start()
+
+
+    def run(self):
+        """Loop: execute actions and return states.
+
+        This continuously waits for incoming actions in action_receiver,
+        it executes them on StageControls and returns the next
+        observation/state.
+        """
+        # TODO
 
 
     @staticmethod
@@ -104,8 +121,8 @@ class Connector(object):
         return array.tobytes()
 
     @staticmethod
-    def _action2binary(action):
-        """Converts an action (int) to bytes."""
+    def _binary2action(buff):
+        """Converts a byte to an action."""
 
-        array = np.array(action, dtype=np.uint8)
-        return array.tobytes()
+        array = np.frombuffer(buff, dtype=np.uint8)
+        return array.item()
