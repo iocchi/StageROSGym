@@ -19,9 +19,8 @@ import sys
 import os
 import numpy as np
 
-# TODO: reenable ROS
-# sys.path.append(os.getenv('MARRTINO_APPS_HOME')+'/program')
-# import robot_cmd_ros as robot
+sys.path.append(os.getenv('MARRTINO_APPS_HOME')+'/program')
+import robot_cmd_ros as robot
 
 from .streaming import Sender, Receiver
 
@@ -38,21 +37,23 @@ class StageControls(object):
     def __init__(self):
         """Initialize."""
 
-        self.tv = 0
-        self.rv = 0
-        self.dt = 0.2
+        self._tv = 0
+        self._rv = 0
+        self._dt = 0.2
         self.state = [0, 0, 0, 0, 0]  # x,y,th,tv,rv
 
         self.actions = [
-            self.action_faster,
-            self.action_slower,
-            self.action_turn1,
-            self.action_turn2,
-            self.action_wait,
+            self._action_faster,
+            self._action_slower,
+            self._action_turn1,
+            self._action_turn2,
+            self._action_wait,
         ]
+        self.n_actions = len(self.actions)
 
         # Start
         self.ros_init()
+
 
     def ros_init(self):
         """Initializations of the ros environment."""
@@ -61,28 +62,42 @@ class StageControls(object):
         robot.setMaxSpeed(0.5,1.0)
         robot.enableObstacleAvoidance(True)
 
-    def action_faster(self):
-        self.tv += 0.1
-        return robot.setSpeed(self.tv,self.rv,self.dt,False)
 
-    def action_slower(self):
-        self.tv -= 0.1
-        return robot.setSpeed(self.tv,self.rv,self.dt,False)
+    def _action_faster(self):
+        self._tv += 0.1
+        return robot.setSpeed(self._tv,self._rv,self._dt,False)
 
-    def action_turn1(self):
-        self.rv += 0.05
-        return robot.setSpeed(self.tv,self.rv,self.dt,False)
 
-    def action_turn2(self):
-        self.rv -= 0.05
-        return robot.setSpeed(self.tv,self.rv,self.dt,False)
+    def _action_slower(self):
+        self._tv -= 0.1
+        return robot.setSpeed(self._tv,self._rv,self._dt,False)
 
-    def action_wait(self):
-        self.rv = 0.0
-        robot.wait(self.dt)        
+
+    def _action_turn1(self):
+        self._rv += 0.05
+        return robot.setSpeed(self._tv,self._rv,self._dt,False)
+
+
+    def _action_turn2(self):
+        self._rv -= 0.05
+        return robot.setSpeed(self._tv,self._rv,self._dt,False)
+
+
+    def _action_wait(self):
+        self._rv = 0.0
+        robot.wait(self._dt)        
         return True
 
+
+    def act(self, i):
+        """Executes action number i (a positive index)."""
+
+        return self.actions[i]()
+
+
     def get_state(self):
+        """Computes and returns the state vector."""
+
         p = robot.getRobotPose(frame='gt')
         v = robot.getRobotVel()
         self.state = [p[0],p[1],p[2],v[0],v[1]]
@@ -141,8 +156,8 @@ class Connector(object):
     def __init__(self):
         """Initialize."""
 
-        # StageControls TODO
-        #self.stage_controls = StageControls()
+        # StageControls
+        self.stage_controls = StageControls()
 
         # Initialize connections
         self.state_sender = Connector.StateSender(
@@ -155,8 +170,8 @@ class Connector(object):
 
         # Connect now
         self.state_sender.start()
-        print("Serving states on", self.state_sender.server.server_address)
-        print("Connecting to ", self.action_receiver.ip, ":",
+        print("> Serving states on", self.state_sender.server.server_address)
+        print("> Connecting to ", self.action_receiver.ip, ":",
             self.action_receiver.port, " for actions. (pause)",
             sep="", end=" ",
         )
@@ -173,14 +188,21 @@ class Connector(object):
         This never terminates: use CTRL-C.
         """
 
-        # TODO: test loop. Write the real one
         while True:
 
+            # Get an action from the agent
             action = self.action_receiver.receive()
-            print("Received action", action)
 
-            # Random state
-            state = np.random.random_sample(5).astype(np.float32)
-            print("Next (random) state", state)
+            # Check
+            if not 0 <= action < self.stage_controls.n_actions:
+                raise RuntimeError(
+                    "Action not valid. " + str(action) + " not in " +
+                    "[0, " + str(self.stage_controls.n_actions-1) + "]"
+                )
 
+            # Move robot
+            self.stage_controls.act(action)
+
+            # Return a state
+            state = self.stage_controls.get_state()
             self.state_sender.send(state)
