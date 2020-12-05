@@ -148,8 +148,11 @@ elif [[ $1 == start || $1 == start-dev ]]; then
 
 
 	docker exec -it rchomeedu-1804-melodic tmux new-session -d -s "$s2"
+	docker exec -it rchomeedu-1804-melodic tmux new-window -t "$s2"
 	docker exec -it rchomeedu-1804-melodic tmux send-keys -t "$s2:0"   "cd ~/src/marrtino_apps/navigation" C-M
 	docker exec -it rchomeedu-1804-melodic tmux send-keys -t "$s2:0"  "roslaunch obstacle_avoidance.launch" C-M
+    sleep 3
+	docker exec -it rchomeedu-1804-melodic tmux send-keys -t "$s2:1"  "rosparam set /gradientBasedNavigation/max_vel_x 0.3" C-M
 
 	echo "Robot behaviors running"
 	echo "====================================="
