@@ -23,6 +23,7 @@ import robot_cmd_ros as robot
 
 from .streaming import Sender, Receiver
 
+# TODO: copy here and use the Communication protocol from test_connection.py
 
 # NOTE: which actions to choose, what increments? dt?
 

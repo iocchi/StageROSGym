@@ -181,7 +181,7 @@ class Receiver(object):
         :param wait: if true, waits until a complete message is received
         :return: a bytes object containing the message, or None if there are
             no new messages
-        :raises: ConnectionAbortedError at the end of transmission
+        :raises: IOError at the end of transmission
         """
 
         if not wait and self._data_queue.empty():
@@ -191,6 +191,6 @@ class Receiver(object):
         msg = self._data_queue.get(block=wait, timeout=None)
 
         if msg is None:
-            raise ConnectionAbortedError("End Of Transmission")
+            raise IOError("End Of Transmission")
 
         return msg
