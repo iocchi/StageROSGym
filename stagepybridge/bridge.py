@@ -42,6 +42,7 @@ class StageControls(object):
         self._dt = 0.2
         self.state = [0, 0, 0, 0, 0]  # x,y,th,tv,rv
 
+        # Actions definitions
         self.actions = [
             self._action_faster,
             self._action_slower,
@@ -50,6 +51,11 @@ class StageControls(object):
             self._action_wait,
         ]
         self.n_actions = len(self.actions)
+
+        # Other (non-RL) signals
+        self.signals = {
+            -1: self._signal_reset,
+        }
 
         # Start
         self.ros_init()
@@ -89,10 +95,27 @@ class StageControls(object):
         return True
 
 
-    def act(self, i):
+    def _signal_reset(self):
+        print("Reset environment is TODO. In stagepybridge/bridge.py")
+        # TODO: reset to the initial state: goto home or reset simulator?
+
+
+    def act(self, action):
         """Executes action number i (a positive index)."""
 
-        return self.actions[i]()
+        # Check
+        if action >= self.n_actions and action not in self.signals:
+            raise RuntimeError(
+                str(action) + " is not an action nor a signal.")
+
+        # Signals
+        if action in self.signals:
+            print("Received: ", self.signals[action].__name__)
+            self.signals[action]()
+            return
+
+        # Actions
+        return self.actions[action]()
 
 
     def get_state(self):
@@ -192,13 +215,6 @@ class Connector(object):
 
             # Get an action from the agent
             action = self.action_receiver.receive()
-
-            # Check
-            if not 0 <= action < self.stage_controls.n_actions:
-                raise RuntimeError(
-                    "Action not valid. " + str(action) + " not in " +
-                    "[0, " + str(self.stage_controls.n_actions-1) + "]"
-                )
 
             # Move robot
             self.stage_controls.act(action)
