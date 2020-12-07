@@ -32,19 +32,19 @@ PLAYGROUND_FOLDER=$script_path/playground
 . $script_path/nvidia-check.bash
 
 
-if [ -e ${ROBOT_DEVICE} ]; then
+if [ -e "${ROBOT_DEVICE}" ]; then
   echo "Robot device ${ROBOT_DEVICE} found"
 fi
 
-if [ -e ${LASER_DEVICE} ]; then
+if [ -e "${LASER_DEVICE}" ]; then
   echo "Laser device ${LASER_DEVICE} found"
 fi
 
-if [ -e ${CAMERA_DEVICE} ]; then
+if [ -e "${CAMERA_DEVICE}" ]; then
   echo "Camera device ${CAMERA_DEVICE} found"
 fi
 
-if [ -e ${JOYSTICK_DEVICE} ]; then
+if [ -e "${JOYSTICK_DEVICE}" ]; then
   echo "Joystick device ${JOYSTICK_DEVICE} found"
 fi
 
@@ -56,9 +56,8 @@ if [ -d /run/user/$(id -u)/pulse ]; then
   echo "Audio support enabled"
 fi
 
-# Removing others, as the docker group should be enough
-chmod g+rw ~/.config/pulse/cookie # this file needed by docker user
-chmod g+xrw /run/user/$(id -u)/pulse # this file needed by docker user
+chmod go+rw ~/.config/pulse/cookie # this file needed by docker user
+chmod go+xrw /run/user/$(id -u)/pulse # this file needed by docker user
 
 # TODO: check for requred repositories in $HOME/src.
 
@@ -69,7 +68,9 @@ docker create -it \
     -v $HOME/.Xauthority:/home/robot/.Xauthority:rw \
     $NVIDIA_STR \
     -e DISPLAY=$DISPLAY \
+    --privileged \
     --net=host \
+    -v /dev:/dev \
     $AUDIO_STR \
     -e ROBOT_DEVICE=$ROBOT_DEVICE \
     -e LASER_DEVICE=$LASER_DEVICE \

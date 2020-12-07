@@ -22,7 +22,8 @@ RUN apt-get update && \
         cmake make g++ git \
         libglvnd0 libgl1 libglx0 libegl1 libxext6 libx11-6 \
         mesa-common-dev mesa-utils freeglut3-dev \
-        python3 python3-pip python3-setuptools \
+        python3 python3-pip python3-setuptools python3-wheel \
+        python python-pip python-setuptools python-wheel \
         libwebsockets-dev \
         ros-melodic-desktop ros-melodic-move-base && \
     apt-get clean && \
@@ -32,9 +33,9 @@ RUN apt-get update && \
 
 RUN pip3 install \
     pandas scipy matplotlib sklearn jupyter notebook
-
 RUN pip3 install \
     gym pygame
+RUN pip install future
 
 #RUN pip3 install \
 #    tensorflow keras keras-rl

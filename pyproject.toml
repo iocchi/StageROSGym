@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "stagerosgym"
+version = "0.1.0"
+description = ""
+license = "GPL-3.0-or-later"
+authors = []
+
+[tool.poetry.dependencies]
+python = "^2.7"
+numpy = "^1.15"
+future = "^0.18.2"
+
+[tool.poetry.dev-dependencies]
+ipython = "^5"
+jedi = "^0.17.2"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
