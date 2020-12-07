@@ -32,17 +32,16 @@ class StageControls(object):
     mapped to these actions based on their position on this list.
     """
 
-    # NOTE: actions can be personalized here
-
     def __init__(self):
         """Initialize."""
 
         self._tv = 0
         self._rv = 0
         self._dt = 0.2
+        self._start_pose = [2, 2, 0]
         self.state = [0, 0, 0, 0, 0]  # x,y,th,tv,rv
 
-        # Actions definitions
+        # Actions definitions. NOTE: actions can be personalized here
         self.actions = [
             self._action_faster,
             self._action_slower,
@@ -96,8 +95,10 @@ class StageControls(object):
 
 
     def _signal_reset(self):
-        print("Reset environment is TODO. In stagepybridge/bridge.py")
-        # TODO: reset to the initial state: goto home or reset simulator?
+        """Reset the environment."""
+
+        robot.stage_setpose(*self._start_pose)
+        robot.wait(0.5)
 
 
     def act(self, action):
