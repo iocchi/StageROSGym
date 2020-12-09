@@ -36,22 +36,24 @@ class StageControls(object):
         """Initialize."""
 
         # Init vars
-        self._tv = 0
-        self._rv = 0
+        self._tv = 0.0
+        self._rv = 0.0
         self.state = [0, 0, 0, 0, 0]  # [x,y,th,tv,rv]
 
         # Parameters
         self._dt = 0.2
         self._max_tv = 0.2              # Max velocity TODO: ros seems to clamp to this value, why?
         self._max_rv = 0.4              # Max angular velocity
-        self._start_pose = [2, 2, 0]  # Initial pose [x,y,th]
+        self._start_pose = [2.0, 2.0, 0.0]  # Initial pose [x,y,th]
 
         # Actions definitions. NOTE: actions can be personalized here
         self.actions = [
-            self._action_faster,
+            self._action_faster1,
+            self._action_faster2,
             self._action_slower,
             self._action_turn1,
             self._action_turn2,
+            self._action_reduce_angle,
             self._actoin_noop,
         ]
         self.n_actions = len(self.actions)
@@ -84,8 +86,14 @@ class StageControls(object):
         self._rv = max(-self._max_rv, min(self._rv, self._max_rv))
 
 
-    def _action_faster(self):
+    def _action_faster1(self):
         self._tv += 0.2
+        self._saturate_velocities()
+        return robot.setSpeed(self._tv,self._rv,self._dt,False)
+
+
+    def _action_faster2(self):
+        self._tv += 0.1
         self._saturate_velocities()
         return robot.setSpeed(self._tv,self._rv,self._dt,False)
 
@@ -105,6 +113,11 @@ class StageControls(object):
     def _action_turn2(self):
         self._rv -= 0.1
         self._saturate_velocities()
+        return robot.setSpeed(self._tv,self._rv,self._dt,False)
+
+
+    def _action_reduce_angle(self):
+        self._rv /= 2.0
         return robot.setSpeed(self._tv,self._rv,self._dt,False)
 
 
