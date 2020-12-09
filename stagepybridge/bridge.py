@@ -43,7 +43,7 @@ class StageControls(object):
 
         # Parameters
         self._dt = 0.2
-        self._max_tv = 0.2              # Max velocity TODO: ros seems to clamp to this value, why?
+        self._max_tv = 0.5              # Max velocity TODO: ros seems to clamp to this value, why?
         self._max_rv = 0.4              # Max angular velocity
         self._start_pose = [2.0, 2.0, 0.0]  # Initial pose [x,y,th]
 
@@ -93,7 +93,7 @@ class StageControls(object):
 
 
     def _action_faster2(self):
-        self._tv += 0.2
+        self._tv += 0.1
         self._saturate_velocities()
         return robot.setSpeed(self._tv,self._rv,self._dt,False)
 
@@ -128,6 +128,8 @@ class StageControls(object):
     def _signal_reset(self):
         """Reset the environment."""
         robot.stage_setpose(*self._start_pose)
+        self._tv = 0.0
+        self._rv = 0.0
         robot.wait(0.5)
 
 
