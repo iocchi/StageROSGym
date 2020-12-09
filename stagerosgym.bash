@@ -172,6 +172,8 @@ elif [ "x$1" == "xstop" ]; then
 
 	docker stop rchomeedu-1804-melodic
 	docker stop stage_environments
+	docker rm rchomeedu-1804-melodic
+	docker rm stage_environments
 
 	echo "...done"
 	echo "====================================="

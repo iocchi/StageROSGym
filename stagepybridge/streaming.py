@@ -84,6 +84,7 @@ class Sender(object):
         request_queue_size = 1
         allow_reuse_address = True
         is_serving = False
+        timeout = None
 
         def handle_error(self, request, client_address):
             """Stop the server on broken connection."""
@@ -144,6 +145,7 @@ class Receiver(object):
 
         # Connect
         self.sock.connect((self.ip, self.port))
+        self.sock.settimeout(None)
 
         # Start receiving
         thread = threading.Thread(target=self._always_receive)

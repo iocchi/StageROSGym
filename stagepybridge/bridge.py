@@ -35,11 +35,16 @@ class StageControls(object):
     def __init__(self):
         """Initialize."""
 
+        # Init vars
         self._tv = 0
         self._rv = 0
+        self.state = [0, 0, 0, 0, 0]  # [x,y,th,tv,rv]
+
+        # Parameters
         self._dt = 0.2
-        self._start_pose = [2, 2, 0]
-        self.state = [0, 0, 0, 0, 0]  # x,y,th,tv,rv
+        self._max_tv = 0.2              # Max velocity TODO: ros seems to clamp to this value, why?
+        self._max_rv = 0.4              # Max angular velocity
+        self._start_pose = [2, 2, 0]  # Initial pose [x,y,th]
 
         # Actions definitions. NOTE: actions can be personalized here
         self.actions = [
@@ -47,7 +52,7 @@ class StageControls(object):
             self._action_slower,
             self._action_turn1,
             self._action_turn2,
-            self._action_wait,
+            self._actoin_noop,
         ]
         self.n_actions = len(self.actions)
 
@@ -64,39 +69,51 @@ class StageControls(object):
         """Initializations of the ros environment."""
 
         robot.begin()
-        robot.setMaxSpeed(0.5,1.0)
+
+        robot.setMaxSpeed(self._max_tv, self._max_rv)
+        os.system("rosparam set /gradientBasedNavigation/max_vel_x %.2f" %
+            self._max_tv)
+        os.system("rosparam set /gradientBasedNavigation/max_vel_theta %.2f" %
+            self._max_rv)
         robot.enableObstacleAvoidance(True)
 
 
+    def _saturate_velocities(self):
+        """Ensure max and min in velocities."""
+        self._tv = max(-self._max_tv, min(self._tv, self._max_tv))
+        self._rv = max(-self._max_rv, min(self._rv, self._max_rv))
+
+
     def _action_faster(self):
-        self._tv += 0.1
+        self._tv += 0.2
+        self._saturate_velocities()
         return robot.setSpeed(self._tv,self._rv,self._dt,False)
 
 
     def _action_slower(self):
         self._tv -= 0.1
+        self._saturate_velocities()
         return robot.setSpeed(self._tv,self._rv,self._dt,False)
 
 
     def _action_turn1(self):
-        self._rv += 0.05
+        self._rv += 0.1
+        self._saturate_velocities()
         return robot.setSpeed(self._tv,self._rv,self._dt,False)
 
 
     def _action_turn2(self):
-        self._rv -= 0.05
+        self._rv -= 0.1
+        self._saturate_velocities()
         return robot.setSpeed(self._tv,self._rv,self._dt,False)
 
 
-    def _action_wait(self):
-        self._rv = 0.0
-        robot.wait(self._dt)        
-        return True
+    def _actoin_noop(self):
+        return robot.setSpeed(self._tv,self._rv,self._dt,False)
 
 
     def _signal_reset(self):
         """Reset the environment."""
-
         robot.stage_setpose(*self._start_pose)
         robot.wait(0.5)
 
