@@ -8,7 +8,7 @@ from . import bridge
 def main():
 
     # Start and loop on bridge connector
-    bridge.Connector().run()              # Never ends
+    bridge.Connector(verbose=True).run()              # Never ends
 
 
 if __name__ == "__main__":

@@ -32,13 +32,14 @@ class StageControls(object):
     mapped to these actions based on their position on this list.
     """
 
-    def __init__(self):
+    def __init__(self, verbose=False):
         """Initialize."""
 
         # Init vars
         self._tv = 0.0
         self._rv = 0.0
         self.state = [0, 0, 0, 0, 0]  # [x,y,th,tv,rv]
+        self._verbose = verbose
 
         # Parameters
         self._dt = 0.2
@@ -53,8 +54,7 @@ class StageControls(object):
             self._action_slower,
             self._action_turn1,
             self._action_turn2,
-            self._action_reduce_angle,
-            self._actoin_noop,
+            self._action_reduce_angle_speed,
         ]
         self.n_actions = len(self.actions)
 
@@ -82,7 +82,7 @@ class StageControls(object):
 
     def _saturate_velocities(self):
         """Ensure max and min in velocities."""
-        self._tv = max(-self._max_tv, min(self._tv, self._max_tv))
+        self._tv = max(-0,            min(self._tv, self._max_tv))
         self._rv = max(-self._max_rv, min(self._rv, self._max_rv))
 
 
@@ -93,7 +93,7 @@ class StageControls(object):
 
 
     def _action_faster2(self):
-        self._tv += 0.1
+        self._tv += 0.2
         self._saturate_velocities()
         return robot.setSpeed(self._tv,self._rv,self._dt,False)
 
@@ -116,7 +116,7 @@ class StageControls(object):
         return robot.setSpeed(self._tv,self._rv,self._dt,False)
 
 
-    def _action_reduce_angle(self):
+    def _action_reduce_angle_speed(self):
         self._rv /= 2.0
         return robot.setSpeed(self._tv,self._rv,self._dt,False)
 
@@ -141,11 +141,15 @@ class StageControls(object):
 
         # Signals
         if action in self.signals:
-            print("Received: ", self.signals[action].__name__)
+            if self._verbose:
+                print("\nReceived: ", self.signals[action].__name__)
+                print("Actions:  ", end="")
             self.signals[action]()
             return
 
         # Actions
+        if self._verbose:
+            print(action, end="")
         return self.actions[action]()
 
 
@@ -207,11 +211,11 @@ class Connector(object):
             Sender.send(self, buff)
 
 
-    def __init__(self):
+    def __init__(self, verbose=False):
         """Initialize."""
 
         # StageControls
-        self.stage_controls = StageControls()
+        self.stage_controls = StageControls(verbose=verbose)
 
         # Initialize connections
         self.state_sender = Connector.StateSender(
