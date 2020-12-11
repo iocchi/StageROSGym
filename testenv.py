@@ -18,8 +18,11 @@ from robot_cmd_ros import *
 # rosrun stage_environments quit.sh
 
 start_pose = [2, 2, 0]
-time_limit = 60
+time_limit = 10
 n_episodes = 1000
+
+max_tv = 0.5
+max_rv = 0.5
 
 class StageEnv:
 
@@ -70,12 +73,14 @@ class StageEnv:
     def reset(self):
         global start_pose
         stage_setpose(start_pose[0],start_pose[1],start_pose[2])
+        self.tv = 0
+        self.rv = 0
         wait(0.5)
         return self.getstate()
 
 
     def action_sample(self):
-        return random.choice(self.actions)
+        return 'a2' #random.choice(self.actions)
 
     def step(self,a):
         astr = 'self.'+a+'()'
@@ -93,7 +98,7 @@ def episode(env):
     timestampStr = dateTimeObj.strftime("%Y%m%d-%H%M%S")
     print('Current Timestamp %s' %timestampStr)
 
-    f = open('data/%s.csv' %(timestampStr), 'w')
+    #f = open('data/%s.csv' %(timestampStr), 'w')
 
     print('\nStart')
     s = env.reset()
@@ -103,17 +108,22 @@ def episode(env):
     while t.secs<tend and not done:
       a = env.action_sample()
       s,r,done = env.step(a)
-      f.write("%06d.%03d ; %.2f ; %.2f ; %.2f ; %.2f ; %.2f; %s\n" %(t.secs,t.nsecs/1e6,s[0],s[1],s[2],s[3],s[4],str(a)))
+      loge = "%06d.%03d ; %.2f ; %.2f ; %.2f ; %.2f ; %.2f; %s\n" \
+            %(t.secs,t.nsecs/1e6,s[0],s[1],s[2],s[3],s[4],str(a))
+      print(loge)
+      #f.write(loge)
       t = rospy.get_rostime()
     stop()
-    f.close()
+    #f.close()
     return not done
 
 
 begin()
 
-setMaxSpeed(0.5,1.0)
+os.system("rosparam set /gradientBasedNavigation/max_vel_x %.2f" %max_tv)
+setMaxSpeed(max_tv,max_rv)
 enableObstacleAvoidance(True)
+
 
 env = StageEnv()
 
