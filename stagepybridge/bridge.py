@@ -73,11 +73,11 @@ class StageControls(object):
         robot.begin()
 
         robot.setMaxSpeed(self._max_tv, self._max_rv)
+        robot.enableObstacleAvoidance(True)
         os.system("rosparam set /gradientBasedNavigation/max_vel_x %.2f" %
             self._max_tv)
         os.system("rosparam set /gradientBasedNavigation/max_vel_theta %.2f" %
             self._max_rv)
-        robot.enableObstacleAvoidance(True)
 
 
     def _saturate_velocities(self):
@@ -127,14 +127,15 @@ class StageControls(object):
 
     def _signal_reset(self):
         """Reset the environment."""
-        robot.stage_setpose(*self._start_pose)
         self._tv = 0.0
         self._rv = 0.0
+        robot.setSpeed(self._tv,self._rv,self._dt,False)
+        robot.stage_setpose(*self._start_pose)
         robot.wait(0.5)
 
 
     def act(self, action):
-        """Executes action number i (a positive index)."""
+        """Executes action number i (a positive index) or a signal."""
 
         # Check
         if action >= self.n_actions and action not in self.signals:
@@ -144,14 +145,13 @@ class StageControls(object):
         # Signals
         if action in self.signals:
             if self._verbose:
-                print("\nReceived: ", self.signals[action].__name__)
-                print("Actions:  ", end="")
+                print("Received: ", self.signals[action].__name__)
             self.signals[action]()
             return
 
         # Actions
         if self._verbose:
-            print(action, end="")
+            print("Action:", "{0:>2}".format(action), end=", ")
         return self.actions[action]()
 
 
@@ -161,6 +161,10 @@ class StageControls(object):
         p = robot.getRobotPose(frame='gt')
         v = robot.getRobotVel()
         self.state = [p[0],p[1],p[2],v[0],v[1]]
+
+        if self._verbose:
+            print("State:", np.array(self.state, dtype=np.float32))
+
         return self.state
 
 
