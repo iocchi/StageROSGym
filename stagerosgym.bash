@@ -75,6 +75,7 @@ elif [[ $1 == start || $1 == start-dev ]]; then
 	echo "====================================="
 	echo ""
 
+    sleep 5
 
 	# rchome_edu
 
