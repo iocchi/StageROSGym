@@ -32,22 +32,29 @@ class StageControls(object):
     mapped to these actions based on their position on this list.
     """
 
-    def __init__(self):
+    def __init__(self, verbose=False):
         """Initialize."""
 
-        self._tv = 0
-        self._rv = 0
+        # Init vars
+        self._tv = 0.0
+        self._rv = 0.0
+        self.state = [0, 0, 0, 0, 0]  # [x,y,th,tv,rv]
+        self._verbose = verbose
+
+        # Parameters
         self._dt = 0.2
-        self._start_pose = [2, 2, 0]
-        self.state = [0, 0, 0, 0, 0]  # x,y,th,tv,rv
+        self._max_tv = 0.5              # Max velocity TODO: ros seems to clamp to this value, why?
+        self._max_rv = 0.4              # Max angular velocity
+        self._start_pose = [2.0, 2.0, 0.0]  # Initial pose [x,y,th]
 
         # Actions definitions. NOTE: actions can be personalized here
         self.actions = [
-            self._action_faster,
+            self._action_faster1,
+            self._action_faster2,
             self._action_slower,
             self._action_turn1,
             self._action_turn2,
-            self._action_wait,
+            self._action_reduce_angle_speed,
         ]
         self.n_actions = len(self.actions)
 
@@ -64,45 +71,71 @@ class StageControls(object):
         """Initializations of the ros environment."""
 
         robot.begin()
-        robot.setMaxSpeed(0.5,1.0)
+
+        robot.setMaxSpeed(self._max_tv, self._max_rv)
         robot.enableObstacleAvoidance(True)
+        os.system("rosparam set /gradientBasedNavigation/max_vel_x %.2f" %
+            self._max_tv)
+        os.system("rosparam set /gradientBasedNavigation/max_vel_theta %.2f" %
+            self._max_rv)
 
 
-    def _action_faster(self):
+    def _saturate_velocities(self):
+        """Ensure max and min in velocities."""
+        self._tv = max(-0,            min(self._tv, self._max_tv))
+        self._rv = max(-self._max_rv, min(self._rv, self._max_rv))
+
+
+    def _action_faster1(self):
+        self._tv += 0.2
+        self._saturate_velocities()
+        return robot.setSpeed(self._tv,self._rv,self._dt,False)
+
+
+    def _action_faster2(self):
         self._tv += 0.1
+        self._saturate_velocities()
         return robot.setSpeed(self._tv,self._rv,self._dt,False)
 
 
     def _action_slower(self):
         self._tv -= 0.1
+        self._saturate_velocities()
         return robot.setSpeed(self._tv,self._rv,self._dt,False)
 
 
     def _action_turn1(self):
-        self._rv += 0.05
+        self._rv += 0.1
+        self._saturate_velocities()
         return robot.setSpeed(self._tv,self._rv,self._dt,False)
 
 
     def _action_turn2(self):
-        self._rv -= 0.05
+        self._rv -= 0.1
+        self._saturate_velocities()
         return robot.setSpeed(self._tv,self._rv,self._dt,False)
 
 
-    def _action_wait(self):
-        self._rv = 0.0
-        robot.wait(self._dt)        
-        return True
+    def _action_reduce_angle_speed(self):
+        self._rv /= 2.0
+        return robot.setSpeed(self._tv,self._rv,self._dt,False)
+
+
+    def _actoin_noop(self):
+        return robot.setSpeed(self._tv,self._rv,self._dt,False)
 
 
     def _signal_reset(self):
         """Reset the environment."""
-
+        self._tv = 0.0
+        self._rv = 0.0
+        robot.setSpeed(self._tv,self._rv,self._dt,False)
         robot.stage_setpose(*self._start_pose)
         robot.wait(0.5)
 
 
     def act(self, action):
-        """Executes action number i (a positive index)."""
+        """Executes action number i (a positive index) or a signal."""
 
         # Check
         if action >= self.n_actions and action not in self.signals:
@@ -111,11 +144,14 @@ class StageControls(object):
 
         # Signals
         if action in self.signals:
-            print("Received: ", self.signals[action].__name__)
+            if self._verbose:
+                print("Received: ", self.signals[action].__name__)
             self.signals[action]()
             return
 
         # Actions
+        if self._verbose:
+            print("Action:", "{0:>2}".format(action), end=", ")
         return self.actions[action]()
 
 
@@ -125,6 +161,10 @@ class StageControls(object):
         p = robot.getRobotPose(frame='gt')
         v = robot.getRobotVel()
         self.state = [p[0],p[1],p[2],v[0],v[1]]
+
+        if self._verbose:
+            print("State:", np.array(self.state, dtype=np.float32))
+
         return self.state
 
 
@@ -177,11 +217,11 @@ class Connector(object):
             Sender.send(self, buff)
 
 
-    def __init__(self):
+    def __init__(self, verbose=False):
         """Initialize."""
 
         # StageControls
-        self.stage_controls = StageControls()
+        self.stage_controls = StageControls(verbose=verbose)
 
         # Initialize connections
         self.state_sender = Connector.StateSender(

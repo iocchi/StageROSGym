@@ -20,6 +20,5 @@ docker create -it \
     -e QT_X11_NO_MITSHM=1 \
     --privileged \
     --net=host \
-    -v /dev:/dev \
     iocchi/stage_environments:$VERSION
 
